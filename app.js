@@ -14,10 +14,10 @@ const ItemCtrl = (function () {
 		items: [
 			{ id: 0, name: 'Steak Dinner', calories: 1200 },
 			{ id: 1, name: 'Cookie', calories: 400 },
-			{ id: 2, name: 'Eggs', calories: 300 },
+			{ id: 2, name: 'Eggs', calories: 300 }
 		],
 		currentItem: null,
-		totalCalories: 0,
+		totalCalories: 0
 	}
 
 	// Public methods
@@ -25,9 +25,30 @@ const ItemCtrl = (function () {
 		getItems: function () {
 			return state.items
 		},
+		addItem: function (name, calories) {
+			let ID
+
+			// Create ID
+			if (state.items.length > 0) {
+				ID = state.items[state.items.length - 1].id + 1
+			} else {
+				ID = 0
+			}
+
+			// Calories to number
+			calories = parseInt(calories)
+
+			// Create new item
+			newItem = new Item(ID, name, calories)
+
+			// Add to items array
+			state.items.push(newItem)
+
+			return newItem
+		},
 		logData: function () {
 			return state
-		},
+		}
 	}
 })()
 
@@ -35,6 +56,9 @@ const ItemCtrl = (function () {
 const UICtrl = (() => {
 	const UISelectors = {
 		itemList: '#item-list',
+		addBtn: '.add-btn',
+		itemNameInput: '#item-name',
+		itemCaloriesInput: '#item-calories'
 	}
 
 	// Public methods
@@ -54,11 +78,45 @@ const UICtrl = (() => {
 			// Insert list items
 			document.querySelector(UISelectors.itemList).innerHTML = html
 		},
+		getItemInput: function () {
+			return {
+				name: document.querySelector(UISelectors.itemNameInput).value,
+				calories: document.querySelector(UISelectors.itemCaloriesInput).value
+			}
+		},
+		getSelectors: function () {
+			return UISelectors
+		}
 	}
 })()
 
 // App Controller
 const App = ((ItemCtrl, UICtrl) => {
+	// Load event listeners
+	const loadEventListeners = function () {
+		// Get UI Selectors
+		const UISelectors = UICtrl.getSelectors()
+
+		// Add item event
+		document
+			.querySelector(UISelectors.addBtn)
+			.addEventListener('click', itemAddSubmit)
+	}
+
+	// Add item submit
+	const itemAddSubmit = function (e) {
+		// Get form input from UI Controller
+		const input = UICtrl.getItemInput()
+
+		// Check for name and calories input
+		if (input.name !== '' && input.calories !== '') {
+			// Add item
+			const newItem = ItemCtrl.addItem(input.name, input.calories)
+		}
+
+		e.preventDefault()
+	}
+
 	// Public methods
 	return {
 		init: function () {
@@ -67,7 +125,10 @@ const App = ((ItemCtrl, UICtrl) => {
 
 			// Populate list with items
 			UICtrl.populateItemList(items)
-		},
+
+			// Load event listeners
+			loadEventListeners()
+		}
 	}
 })(ItemCtrl, UICtrl)
 
